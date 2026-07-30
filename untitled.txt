@@ -1,0 +1,114 @@
+--// [UPD] PHANTOM BALL - MENU IDOL STYLE V5
+--// Thu nhỏ + Bật tắt có màu + Auto bật sẵn
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players,RS,RS2,VIM,UIS = game:GetService("Players"),game:GetService("RunService"),game:GetService("ReplicatedStorage"),game:GetService("VirtualInputManager"),game:GetService("UserInputService")
+local LP = Players.LocalPlayer
+
+getgenv().CFG = {Parry=true, Spam=true, Range=30, Speed=0.1, Open=true}
+
+-- Tìm Remote
+local Remote
+for _,v in pairs(RS2:GetDescendants()) do if v:IsA("RemoteEvent") and v.Name:lower():find("parry") then Remote=v break end end
+
+-- GUI
+local gui = Instance.new("ScreenGui", game.CoreGui) gui.Name = "UPD_IdolMenu"
+local main = Instance.new("Frame", gui) 
+main.Size = UDim2.new(0, 230, 0, 160) 
+main.Position = UDim2.new(0, 15, 0, 15) 
+main.BackgroundColor3 = Color3.fromRGB(18,18,22)
+main.BorderSizePixel = 0
+main.Active = true main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
+
+-- THANH TITLE + NÚT THU NHỎ
+local topbar = Instance.new("Frame", main) 
+topbar.Size = UDim2.new(1,0,0,35) 
+topbar.BackgroundColor3 = Color3.fromRGB(25,25,30)
+Instance.new("UICorner", topbar).CornerRadius = UDim.new(0,12)
+
+local title = Instance.new("TextLabel", topbar) 
+title.Size = UDim2.new(1,-40,1,0) 
+title.Text = "UPD PHANTOM MENU" 
+title.TextColor3 = Color3.new(1,1,1) 
+title.Font = Enum.Font.GothamBold 
+title.TextSize = 15 
+title.BackgroundTransparency = 1
+
+local miniBtn = Instance.new("TextButton", topbar) 
+miniBtn.Size = UDim2.new(0,30,0,30) 
+miniBtn.Position = UDim2.new(1,-35,0,2) 
+miniBtn.Text = "-" 
+miniBtn.Font = Enum.Font.GothamBold 
+miniBtn.TextSize = 20 
+miniBtn.TextColor3 = Color3.new(1,1,1) 
+miniBtn.BackgroundColor3 = Color3.fromRGB(40,40,45)
+Instance.new("UICorner", miniBtn).CornerRadius = UDim.new(0,6)
+
+-- CONTENT
+local content = Instance.new("Frame", main) 
+content.Size = UDim2.new(1,0,1,-35) 
+content.Position = UDim2.new(0,0,0,35) 
+content.BackgroundTransparency = 1
+
+local function MakeToggle(y, name, var)
+    local btn = Instance.new("TextButton", content)
+    btn.Size = UDim2.new(1,-20,0,45)
+    btn.Position = UDim2.new(0,10,0,y)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
+    
+    local function Update()
+        btn.Text = name..": "..(CFG[var] and "BAT" or "TAT")
+        btn.BackgroundColor3 = CFG[var] and Color3.fromRGB(0, 200, 80) or Color3.fromRGB(200, 0, 50)
+    end
+    Update()
+    
+    btn.MouseButton1Click:Connect(function()
+        CFG[var] = not CFG[var]
+        Update()
+    end)
+    return btn
+end
+
+local parryBtn = MakeToggle(10, "AUTO PARRY", "Parry")
+local spamBtn = MakeToggle(65, "AUTO SPAM", "Spam")
+
+-- THU NHỎ MENU
+miniBtn.MouseButton1Click:Connect(function()
+    CFG.Open = not CFG.Open
+    content.Visible = CFG.Open
+    main.Size = CFG.Open and UDim2.new(0,230,0,160) or UDim2.new(0,230,0,35)
+    miniBtn.Text = CFG.Open and "-" or "+"
+end)
+
+-- PHÍM TẮT K
+UIS.InputBegan:Connect(function(i) if i.KeyCode==Enum.KeyCode.K then gui.Enabled=not gui.Enabled end end)
+
+-- AUTO PARRY
+RS.RenderStepped:Connect(function()
+    if CFG.Parry and Remote then
+        for _,ball in pairs(workspace:GetChildren()) do
+            if ball.Name=="Ball" and ball:FindFirstChild("Sphere") then
+                local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and (ball.Sphere.Position-hrp.Position).Magnitude < CFG.Range then
+                    Remote:FireServer()
+                    hrp.CFrame = CFrame.lookAt(hrp.Position, ball.Sphere.Position)
+                end
+            end
+        end
+    end
+end)
+
+-- AUTO SPAM
+task.spawn(function()
+    while task.wait(CFG.Speed) do
+        if CFG.Spam then
+            VIM:SendKeyEvent(true,"E",false,game) task.wait(0.02) VIM:SendKeyEvent(false,"E",false,game)
+        end
+    end
+end)
+
+print("[UPD] Menu Idol Loaded!")
