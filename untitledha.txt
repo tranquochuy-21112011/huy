@@ -1,0 +1,63 @@
+--// [UPD] AUTO PARRY DO MAP V8
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players,RS,RS2,UIS = game:GetService("Players"),game:GetService("RunService"),game:GetService("ReplicatedStorage"),game:GetService("UserInputService")
+local LP = Players.LocalPlayer
+
+getgenv().CFG = {Parry=false, Range=60} -- Tang Range cuc dai
+
+-- 1. DO TEN QUA CAU
+local BallName = nil
+for _,v in pairs(workspace:GetChildren()) do
+    if v:FindFirstChild("Sphere") or v:FindFirstChild("Handle") then
+        BallName = v.Name
+        print("=> TIM THAY QUA CAU TEN:", BallName)
+        break
+    end
+end
+if not BallName then warn("=> KHONG TIM THAY QUA CAU!") end
+
+-- 2. DO TEN REMOTE
+local Remote
+for _,v in pairs(RS2:GetDescendants()) do 
+    if v:IsA("RemoteEvent") then 
+        print("Remote co:", v.Name) -- In het ra
+        if v.Name:lower():find("parry") or v.Name:lower():find("hit") or v.Name:lower():find("deflect") then 
+            Remote=v 
+        end 
+    end 
+end
+if Remote then print("=> DUNG REMOTE:", Remote.Name) else warn("=> KHONG TIM THAY REMOTE!") end
+
+
+-- GUI 1 NUT
+local gui = Instance.new("ScreenGui", game.CoreGui) 
+local main = Instance.new("Frame", gui) main.Size = UDim2.new(0, 220, 0, 80) main.Position = UDim2.new(0, 20, 0, 20) main.BackgroundColor3 = Color3.fromRGB(15,15,18) main.Active = true main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
+local btn = Instance.new("TextButton", main) btn.Size = UDim2.new(1,-20,0,45) btn.Position = UDim2.new(0,10,0,15) btn.Font = Enum.Font.GothamBold btn.TextSize = 15 btn.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
+
+local function Update() btn.Text = "PARRY: "..(CFG.Parry and "BAT" or "TAT") btn.BackgroundColor3 = CFG.Parry and Color3.fromRGB(0,220,90) or Color3.fromRGB(220,0,60) end
+Update()
+btn.MouseButton1Click:Connect(function() CFG.Parry = not CFG.Parry Update() end)
+
+-- 3. VONG LAP PARRY
+RS.RenderStepped:Connect(function()
+    if CFG.Parry and Remote and BallName then
+        local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        for _,ball in pairs(workspace:GetChildren()) do
+            if ball.Name == BallName then -- Dung ten that
+                local part = ball:FindFirstChild("Sphere") or ball:FindFirstChild("Handle")
+                if part then
+                    local dist = (part.Position - hrp.Position).Magnitude
+                    if dist < CFG.Range then
+                        print("BAN BONG! Dist:", math.floor(dist))
+                        pcall(function() Remote:FireServer() end) -- pcall de ko bi loi
+                        hrp.CFrame = CFrame.lookAt(hrp.Position, part.Position)
+                    end
+                end
+            end
+        end
+    end
+end)
+print("Loaded. Cho no in ra ten Qua Cau va Remote")
