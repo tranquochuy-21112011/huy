@@ -1,0 +1,122 @@
+--// [UPD] PHANTOM BALL - AUTO PARRY VIP V6
+--// Chỉ 1 nút, mặc định TẮT, bóng tới là tự parry
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players,RS,RS2,VIM,UIS = game:GetService("Players"),game:GetService("RunService"),game:GetService("ReplicatedStorage"),game:GetService("VirtualInputManager"),game:GetService("UserInputService")
+local LP = Players.LocalPlayer
+
+getgenv().CFG = {Parry=false, Range=35, Open=true} -- Mặc định TẮT
+
+-- TỰ TÌM REMOTE PARRY CỦA UPD
+local Remote
+for _,v in pairs(RS2:GetDescendants()) do 
+    if v:IsA("RemoteEvent") and (v.Name:lower():find("parry") or v.Name:lower():find("hit")) then 
+        Remote=v 
+        break 
+    end 
+end
+
+-- GUI MENU VIP
+local gui = Instance.new("ScreenGui", game.CoreGui) 
+gui.Name = "UPD_VIP_Parry"
+gui.ResetOnSpawn = false
+
+local main = Instance.new("Frame", gui) 
+main.Size = UDim2.new(0, 220, 0, 100) 
+main.Position = UDim2.new(0, 20, 0, 20) 
+main.BackgroundColor3 = Color3.fromRGB(15,15,18)
+main.BorderSizePixel = 0
+main.Active = true 
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
+
+-- THANH TRÊN + NÚT THU NHỎ
+local top = Instance.new("Frame", main) 
+top.Size = UDim2.new(1,0,0,32) 
+top.BackgroundColor3 = Color3.fromRGB(22,22,26)
+Instance.new("UICorner", top).CornerRadius = UDim.new(0,10)
+
+local title = Instance.new("TextLabel", top) 
+title.Size = UDim2.new(1,-40,1,0) 
+title.Text = "UPD VIP PARRY" 
+title.TextColor3 = Color3.fromRGB(255,255,255) 
+title.Font = Enum.Font.GothamBold 
+title.TextSize = 14 
+title.BackgroundTransparency = 1
+
+local mini = Instance.new("TextButton", top) 
+mini.Size = UDim2.new(0,28,0,28) 
+mini.Position = UDim2.new(1,-32,0,2) 
+mini.Text = "-" 
+mini.Font = Enum.Font.GothamBold 
+mini.TextSize = 18 
+mini.TextColor3 = Color3.new(1,1,1) 
+mini.BackgroundColor3 = Color3.fromRGB(35,35,40)
+Instance.new("UICorner", mini).CornerRadius = UDim.new(0,6)
+
+-- NỘI DUNG: CHỈ 1 NÚT
+local content = Instance.new("Frame", main) 
+content.Size = UDim2.new(1,0,1,-32) 
+content.Position = UDim2.new(0,0,0,32) 
+content.BackgroundTransparency = 1
+
+local parryBtn = Instance.new("TextButton", content)
+parryBtn.Size = UDim2.new(1,-20,0,45)
+parryBtn.Position = UDim2.new(0,10,0,10)
+parryBtn.Font = Enum.Font.GothamBold
+parryBtn.TextSize = 15
+parryBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", parryBtn).CornerRadius = UDim.new(0,8)
+
+-- HÀM CẬP NHẬT MÀU NÚT
+local function UpdateBtn()
+    if CFG.Parry then
+        parryBtn.Text = "AUTO PARRY: BẬT"
+        parryBtn.BackgroundColor3 = Color3.fromRGB(0, 220, 90) -- XANH LÁ
+    else
+        parryBtn.Text = "AUTO PARRY: TẮT" 
+        parryBtn.BackgroundColor3 = Color3.fromRGB(220, 0, 60) -- ĐỎ
+    end
+end
+UpdateBtn()
+
+-- BẤM ĐỂ BẬT TẮT
+parryBtn.MouseButton1Click:Connect(function()
+    CFG.Parry = not CFG.Parry
+    UpdateBtn()
+end)
+
+-- NÚT THU NHỎ
+mini.MouseButton1Click:Connect(function()
+    CFG.Open = not CFG.Open
+    content.Visible = CFG.Open
+    main.Size = CFG.Open and UDim2.new(0,220,0,100) or UDim2.new(0,220,0,32)
+    mini.Text = CFG.Open and "-" or "+"
+end)
+
+-- PHÍM K ẨN/HIỆN MENU
+UIS.InputBegan:Connect(function(i) 
+    if i.KeyCode==Enum.KeyCode.K then 
+        gui.Enabled=not gui.Enabled 
+    end 
+end)
+
+-- VÒNG LẶP AUTO PARRY VIP
+RS.RenderStepped:Connect(function()
+    if CFG.Parry and Remote then
+        local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        
+        for _,ball in pairs(workspace:GetChildren()) do
+            if ball.Name=="Ball" and ball:FindFirstChild("Sphere") then
+                local dist = (ball.Sphere.Position - hrp.Position).Magnitude
+                if dist < CFG.Range then -- Bóng lại gần trong Range là tự parry
+                    Remote:FireServer()
+                    hrp.CFrame = CFrame.lookAt(hrp.Position, ball.Sphere.Position) -- Tự quay mặt về bóng
+                end
+            end
+        end
+    end
+end)
+
+print("[UPD VIP] Loaded! Mac dinh TAT. Bam de bat.")
