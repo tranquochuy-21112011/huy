@@ -1,0 +1,61 @@
+--// [UPD] AUTO PARRY DEBUG V7
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players,RS,RS2,UIS = game:GetService("Players"),game:GetService("RunService"),game:GetService("ReplicatedStorage"),game:GetService("UserInputService")
+local LP = Players.LocalPlayer
+
+getgenv().CFG = {Parry=false, Range=50, Open=true} -- Tang Range len 50 cho de test
+
+-- 1. QUÉT TẤT CẢ REMOTE TRONG GAME
+local Remote
+print("========== DANG QUET REMOTE ==========")
+for _,v in pairs(RS2:GetDescendants()) do 
+    if v:IsA("RemoteEvent") then 
+        print("Tim thay:", v.Name) -- In ra het de minh xem
+        if v.Name:lower():find("parry") or v.Name:lower():find("hit") or v.Name:lower():find("ball") then 
+            Remote=v 
+        end 
+    end 
+end
+
+if Remote then 
+    print("=> DANG DUNG REMOTE:", Remote.Name) 
+else 
+    warn("=> KHONG TIM THAY REMOTE PARRY!") 
+end
+print("======================================")
+
+
+-- GUI GIONG BAN CU
+local gui = Instance.new("ScreenGui", game.CoreGui) gui.Name = "UPD_DEBUG"
+local main = Instance.new("Frame", gui) main.Size = UDim2.new(0, 220, 0, 100) main.Position = UDim2.new(0, 20, 0, 20) main.BackgroundColor3 = Color3.fromRGB(15,15,18) main.Active = true main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
+local top = Instance.new("Frame", main) top.Size = UDim2.new(1,0,0,32) top.BackgroundColor3 = Color3.fromRGB(22,22,26) Instance.new("UICorner", top).CornerRadius = UDim.new(0,10)
+local title = Instance.new("TextLabel", top) title.Size = UDim2.new(1,-40,1,0) title.Text = "UPD DEBUG PARRY" title.TextColor3 = Color3.new(1,1,1) title.Font = Enum.Font.GothamBold title.TextSize = 14 title.BackgroundTransparency = 1
+local content = Instance.new("Frame", main) content.Size = UDim2.new(1,0,1,-32) content.Position = UDim2.new(0,0,0,32) content.BackgroundTransparency = 1
+local parryBtn = Instance.new("TextButton", content) parryBtn.Size = UDim2.new(1,-20,0,45) parryBtn.Position = UDim2.new(0,10,0,10) parryBtn.Font = Enum.Font.GothamBold parryBtn.TextSize = 15 parryBtn.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", parryBtn).CornerRadius = UDim.new(0,8)
+
+local function UpdateBtn()
+    parryBtn.Text = "AUTO PARRY: "..(CFG.Parry and "BAT" or "TAT")
+    parryBtn.BackgroundColor3 = CFG.Parry and Color3.fromRGB(0, 220, 90) or Color3.fromRGB(220, 0, 60)
+end
+UpdateBtn()
+parryBtn.MouseButton1Click:Connect(function() CFG.Parry = not CFG.Parry UpdateBtn() end)
+
+-- AUTO PARRY + IN RA KHI BAN
+RS.RenderStepped:Connect(function()
+    if CFG.Parry and Remote then
+        local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        for _,ball in pairs(workspace:GetChildren()) do
+            if ball.Name=="Ball" and ball:FindFirstChild("Sphere") then
+                local dist = (ball.Sphere.Position - hrp.Position).Magnitude
+                if dist < CFG.Range then
+                    print("BAN! Khoang cach:", math.floor(dist)) -- In ra khi no ban
+                    Remote:FireServer()
+                    hrp.CFrame = CFrame.lookAt(hrp.Position, ball.Sphere.Position)
+                end
+            end
+        end
+    end
+end)
