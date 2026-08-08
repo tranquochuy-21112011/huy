@@ -1,0 +1,427 @@
+-- QHuy Script V1
+
+-- Beat Ball
+
+-- UI only
+
+local Players = game:GetService("Players")
+
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+
+gui.Name = "QHuyScript"
+
+gui.ResetOnSpawn = false
+
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main
+
+local main = Instance.new("Frame")
+
+main.Size = UDim2.new(0, 330, 0, 390)
+
+main.Position = UDim2.new(0.5, -165, 0.5, -195)
+
+main.BackgroundColor3 = Color3.fromRGB(255,255,255)
+
+main.BorderSizePixel = 0
+
+main.Parent = gui
+
+local corner = Instance.new("UICorner")
+
+corner.CornerRadius = UDim.new(0, 14)
+
+corner.Parent = main
+
+-- Shadow
+
+local stroke = Instance.new("UIStroke")
+
+stroke.Color = Color3.fromRGB(210,210,210)
+
+stroke.Thickness = 2
+
+stroke.Parent = main
+
+-- Title
+
+local title = Instance.new("TextLabel")
+
+title.Size = UDim2.new(1, 0, 0, 55)
+
+title.BackgroundTransparency = 1
+
+title.Text = "QHuy Script"
+
+title.TextColor3 = Color3.fromRGB(20,20,20)
+
+title.Font = Enum.Font.GothamBold
+
+title.TextSize = 25
+
+title.Parent = main
+
+-- Loading
+
+local loadingText = Instance.new("TextLabel")
+
+loadingText.Size = UDim2.new(1, 0, 0, 30)
+
+loadingText.Position = UDim2.new(0,0,0,65)
+
+loadingText.BackgroundTransparency = 1
+
+loadingText.Text = "Đang loading... 0%"
+
+loadingText.TextColor3 = Color3.fromRGB(60,60,60)
+
+loadingText.Font = Enum.Font.Gotham
+
+loadingText.TextSize = 16
+
+loadingText.Parent = main
+
+local barBack = Instance.new("Frame")
+
+barBack.Size = UDim2.new(0.8,0,0,8)
+
+barBack.Position = UDim2.new(0.1,0,0,100)
+
+barBack.BackgroundColor3 = Color3.fromRGB(225,225,225)
+
+barBack.BorderSizePixel = 0
+
+barBack.Parent = main
+
+local barCorner = Instance.new("UICorner")
+
+barCorner.CornerRadius = UDim.new(1,0)
+
+barCorner.Parent = barBack
+
+local bar = Instance.new("Frame")
+
+bar.Size = UDim2.new(0,0,1,0)
+
+bar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+
+bar.BorderSizePixel = 0
+
+bar.Parent = barBack
+
+local barCorner2 = Instance.new("UICorner")
+
+barCorner2.CornerRadius = UDim.new(1,0)
+
+barCorner2.Parent = bar
+
+-- Container
+
+local container = Instance.new("Frame")
+
+container.Size = UDim2.new(1,-40,0,190)
+
+container.Position = UDim2.new(0,20,0,130)
+
+container.BackgroundTransparency = 1
+
+container.Visible = false
+
+container.Parent = main
+
+local layout = Instance.new("UIListLayout")
+
+layout.Padding = UDim.new(0,10)
+
+layout.Parent = container
+
+-- Button creator
+
+local function createButton(name)
+
+    local button = Instance.new("TextButton")
+
+    button.Size = UDim2.new(1,0,0,50)
+
+    button.BackgroundColor3 = Color3.fromRGB(245,245,245)
+
+    button.Text = name .. "  [OFF]"
+
+    button.TextColor3 = Color3.fromRGB(20,20,20)
+
+    button.Font = Enum.Font.GothamBold
+
+    button.TextSize = 17
+
+    button.AutoButtonColor = false
+
+    button.Parent = container
+
+    local c = Instance.new("UICorner")
+
+    c.CornerRadius = UDim.new(0,10)
+
+    c.Parent = button
+
+    local s = Instance.new("UIStroke")
+
+    s.Color = Color3.fromRGB(220,220,220)
+
+    s.Parent = button
+
+    local enabled = false
+
+    button.MouseButton1Click:Connect(function()
+
+        enabled = not enabled
+
+        if enabled then
+
+            button.Text = name .. "  [ON]"
+
+            button.BackgroundColor3 = Color3.fromRGB(225,225,225)
+
+        else
+
+            button.Text = name .. "  [OFF]"
+
+            button.BackgroundColor3 = Color3.fromRGB(245,245,245)
+
+        end
+
+    end)
+
+    return button
+
+end
+
+local parryButton = createButton("Parry")
+
+local spamButton = createButton("Spam Parry")
+
+-- Info button
+
+local infoButton = Instance.new("TextButton")
+
+infoButton.Size = UDim2.new(1,0,0,45)
+
+infoButton.BackgroundColor3 = Color3.fromRGB(20,20,20)
+
+infoButton.Text = "INFO"
+
+infoButton.TextColor3 = Color3.fromRGB(255,255,255)
+
+infoButton.Font = Enum.Font.GothamBold
+
+infoButton.TextSize = 16
+
+infoButton.Parent = container
+
+local infoCorner = Instance.new("UICorner")
+
+infoCorner.CornerRadius = UDim.new(0,10)
+
+infoCorner.Parent = infoButton
+
+-- Info panel
+
+local info = Instance.new("Frame")
+
+info.Size = UDim2.new(0,280,0,210)
+
+info.Position = UDim2.new(0.5,-140,0.5,-105)
+
+info.BackgroundColor3 = Color3.fromRGB(255,255,255)
+
+info.Visible = false
+
+info.BorderSizePixel = 0
+
+info.Parent = gui
+
+local infoCorner2 = Instance.new("UICorner")
+
+infoCorner2.CornerRadius = UDim.new(0,14)
+
+infoCorner2.Parent = info
+
+local infoStroke = Instance.new("UIStroke")
+
+infoStroke.Color = Color3.fromRGB(210,210,210)
+
+infoStroke.Thickness = 2
+
+infoStroke.Parent = info
+
+local infoTitle = Instance.new("TextLabel")
+
+infoTitle.Size = UDim2.new(1,0,0,45)
+
+infoTitle.BackgroundTransparency = 1
+
+infoTitle.Text = "QHuy Script - INFO"
+
+infoTitle.TextColor3 = Color3.fromRGB(20,20,20)
+
+infoTitle.Font = Enum.Font.GothamBold
+
+infoTitle.TextSize = 19
+
+infoTitle.Parent = info
+
+local infoText = Instance.new("TextLabel")
+
+infoText.Size = UDim2.new(1,-30,0,110)
+
+infoText.Position = UDim2.new(0,15,0,55)
+
+infoText.BackgroundTransparency = 1
+
+infoText.Text =
+
+    "Người tạo script: QHuy\n\n" ..
+
+    "Trạng Thái: On\n\n" ..
+
+    "Script: Beat Ball\n\n" ..
+
+    "Phiên bản: V1"
+
+infoText.TextColor3 = Color3.fromRGB(50,50,50)
+
+infoText.Font = Enum.Font.Gotham
+
+infoText.TextSize = 15
+
+infoText.TextXAlignment = Enum.TextXAlignment.Left
+
+infoText.Parent = info
+
+local close = Instance.new("TextButton")
+
+close.Size = UDim2.new(1,-30,0,35)
+
+close.Position = UDim2.new(0,15,1,-45)
+
+close.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+close.Text = "ĐÓNG"
+
+close.TextColor3 = Color3.fromRGB(255,255,255)
+
+close.Font = Enum.Font.GothamBold
+
+close.TextSize = 14
+
+close.Parent = info
+
+local closeCorner = Instance.new("UICorner")
+
+closeCorner.CornerRadius = UDim.new(0,8)
+
+closeCorner.Parent = close
+
+infoButton.MouseButton1Click:Connect(function()
+
+    info.Visible = true
+
+end)
+
+close.MouseButton1Click:Connect(function()
+
+    info.Visible = false
+
+end)
+
+-- Loading 0 -> 100
+
+task.spawn(function()
+
+    for i = 0,100 do
+
+        loadingText.Text = "Đang loading... " .. i .. "%"
+
+        bar.Size = UDim2.new(i/100,0,1,0)
+
+        task.wait(0.025)
+
+    end
+
+    loadingText.Text = "Loading hoàn tất!"
+
+    task.wait(0.4)
+
+    container.Visible = true
+
+end)
+
+-- Kéo bảng
+
+local dragging = false
+
+local dragStart
+
+local startPos
+
+main.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+
+        dragStart = input.Position
+
+        startPos = main.Position
+
+        input.Changed:Connect(function()
+
+            if input.UserInputState == Enum.UserInputState.End then
+
+                dragging = false
+
+            end
+
+        end)
+
+    end
+
+end)
+
+main.InputChanged:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        input.Changed:Connect(function()
+
+            if dragging then
+
+                local delta = input.Position - dragStart
+
+                main.Position = UDim2.new(
+
+                    startPos.X.Scale,
+
+                    startPos.X.Offset + delta.X,
+
+                    startPos.Y.Scale,
+
+                    startPos.Y.Offset + delta.Y
+
+                )
+
+            end
+
+        end)
+
+    end
+
+end)
